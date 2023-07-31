@@ -48,7 +48,11 @@ export class Multivector {
     return new Multivector(state);
   }
 
-  product(m: Multivector): Multivector {
+  product(m: Multivector | number): Multivector {
+    if (typeof m === "number") {
+      return this.product(Multivector.scalar(m));
+    }
+
     const newValues = new TypedArrayMap<number>();
 
     for (const otherElement of m.values.entries()) {
@@ -82,7 +86,30 @@ export class Multivector {
     return result;
   }
 
-  add(m: Multivector): Multivector {
+  static rotor(
+    angle: number,
+    base1: Base,
+    base2: Base
+  ): [Multivector, Multivector] {
+    if (base1 === base2) {
+      throw new Error("Cannot create a rotor with equal bases");
+    }
+
+    return [
+      Multivector.scalar(Math.cos(-angle / 2)).add(
+        Multivector.bivector(Math.sin(-angle / 2), base1, base2)
+      ),
+      Multivector.scalar(Math.cos(angle / 2)).add(
+        Multivector.bivector(Math.sin(angle / 2), base1, base2)
+      ),
+    ];
+  }
+
+  add(m: Multivector | number): Multivector {
+    if (typeof m === "number") {
+      return this.add(Multivector.scalar(m));
+    }
+
     const newValues = new TypedArrayMap<number>(this.values);
 
     for (const [key, value] of m.values.entries()) {
@@ -101,9 +128,12 @@ export class Multivector {
     return this.add(m.product(Multivector.scalar(-1)));
   }
 
-  scalarPart(): Multivector {
-    const scalar = this.values.get(new Uint8Array([])) ?? 0;
-    return Multivector.scalar(scalar);
+  part(...bases: Base[]): number {
+    return this.values.get(new Uint8Array(bases)) ?? 0;
+  }
+
+  scalarPart(): number {
+    return this.part();
   }
 
   pow(power: number): Multivector {

@@ -108,9 +108,20 @@ describe("multivector", () => {
     expect(m.pow(3).toString()).toEqual("4 + 4e₁");
     expect(m.pow(4).toString()).toEqual("8 + 8e₁");
   });
+
+  it("should handle rotors", () => {
+    const m1 = e1.add(e2);
+    const module1 = Math.sqrt(m1.product(m1).scalarPart());
+    const [R1, R2] = Multivector.rotor(Math.PI / 2, 1, 2);
+    const m2 = R1.product(m1).product(R2);
+    const module2 = Math.sqrt(m2.product(m2).scalarPart());
+    expect(module1.toFixed(5)).toEqual(module2.toFixed(5));
+    expect(Math.round(m2.part(1))).toEqual(-1);
+    expect(m2.part(2)).toEqual(1);
+  });
 });
 
-function range(max: number, min = 0, step: number = 1): Array<number> {
+function range(max: number, min: number = 0, step: number = 1): Array<number> {
   const result = [];
 
   for (let i = min; i < max; i += step) {
