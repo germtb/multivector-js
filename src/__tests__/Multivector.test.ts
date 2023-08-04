@@ -119,6 +119,42 @@ describe("multivector", () => {
     expect(Math.round(m2.part(1))).toEqual(-1);
     expect(m2.part(2)).toEqual(1);
   });
+
+  it("should handle rotations", () => {
+    let v = e1.add(e2).add(e3);
+
+    // Rotate on each axis 90 degrees
+    v = v.rotate(Math.PI / 2, 1, 2);
+    v = v.rotate(Math.PI / 2, 2, 3);
+    v = v.rotate(Math.PI / 2, 1, 3);
+
+    expect(Math.round(v.part(1))).toEqual(-1);
+    expect(Math.round(v.part(2))).toEqual(-1);
+    expect(Math.round(v.part(3))).toEqual(-1);
+
+    // Invert the rotation (steps need to happen in reverse order)
+    v = v.rotate(-Math.PI / 2, 2, 3);
+    v = v.rotate(-Math.PI / 2, 1, 2);
+    v = v.rotate(-Math.PI / 2, 1, 3);
+
+    expect(Math.round(v.part(1))).toEqual(1);
+    expect(Math.round(v.part(2))).toEqual(1);
+    expect(Math.round(v.part(3))).toEqual(1);
+  });
+
+  it("should handle conjugate", () => {
+    const i = e12;
+    expect(i.conjugate().toString()).toEqual("- e₁e₂");
+    expect(i.product(i.conjugate())).toEqual(one);
+
+    const m1 = e1;
+    expect(m1.conjugate().toString()).toEqual("- e₁");
+    expect(m1.product(m1.conjugate())).toEqual(Multivector.scalar(-1));
+
+    const m2 = one.add(e12);
+    expect(m2.conjugate().toString()).toEqual("1 - e₁e₂");
+    expect(m2.product(m2.conjugate())).toEqual(two);
+  });
 });
 
 function range(max: number, min: number = 0, step: number = 1): Array<number> {

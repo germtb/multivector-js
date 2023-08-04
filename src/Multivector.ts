@@ -13,7 +13,7 @@ export class Multivector {
   }
 
   static zero(): Multivector {
-    return Multivector.scalar(0);
+    return new Multivector(new TypedArrayMap());
   }
 
   static one(): Multivector {
@@ -86,6 +86,11 @@ export class Multivector {
     return result;
   }
 
+  rotate(angle: number, base1: Base, base2: Base) {
+    const [r1, r] = Multivector.rotor(angle, base1, base2);
+    return r1.product(this).product(r);
+  }
+
   static rotor(
     angle: number,
     base1: Base,
@@ -134,6 +139,27 @@ export class Multivector {
 
   scalarPart(): number {
     return this.part();
+  }
+
+  nonScalarPart(): Multivector {
+    if (this.scalarPart() === 0) {
+      return this;
+    }
+
+    const newValues = new TypedArrayMap(this.values);
+    newValues.remove(new Uint8Array([]));
+    return new Multivector(newValues);
+  }
+
+  conjugate(): Multivector {
+    const newValues = new TypedArrayMap<number>();
+
+    for (const [key, value] of this.values.entries()) {
+      const sign = Math.pow(-1, (key.length * (key.length + 1)) / 2);
+      newValues.set(key, sign * value);
+    }
+
+    return new Multivector(newValues);
   }
 
   pow(power: number): Multivector {
