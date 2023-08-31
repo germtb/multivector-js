@@ -10,6 +10,7 @@ const e2 = Multivector.vector(1, 2);
 const e3 = Multivector.vector(1, 3);
 
 const e12 = Multivector.nvector(1, 1, 2);
+const e13 = Multivector.nvector(1, 1, 3);
 const e123 = Multivector.nvector(1, 1, 2, 3);
 const e1234 = Multivector.nvector(1, 1, 2, 3, 4);
 const e12345 = Multivector.nvector(1, 1, 2, 3, 4, 5);
@@ -111,13 +112,13 @@ describe("multivector", () => {
 
   it("should handle rotors", () => {
     const m1 = e1.add(e2);
-    const module1 = Math.sqrt(m1.product(m1).scalarPart());
+    const module1 = Math.sqrt(m1.product(m1).scalarComponent());
     const [R1, R2] = Multivector.rotor(Math.PI / 2, 1, 2);
     const m2 = R1.product(m1).product(R2);
-    const module2 = Math.sqrt(m2.product(m2).scalarPart());
+    const module2 = Math.sqrt(m2.product(m2).scalarComponent());
     expect(module1.toFixed(5)).toEqual(module2.toFixed(5));
-    expect(Math.round(m2.part(1))).toEqual(-1);
-    expect(m2.part(2)).toEqual(1);
+    expect(Math.round(m2.component(1))).toEqual(-1);
+    expect(m2.component(2)).toEqual(1);
   });
 
   it("should handle rotations", () => {
@@ -128,32 +129,70 @@ describe("multivector", () => {
     v = v.rotate(Math.PI / 2, 2, 3);
     v = v.rotate(Math.PI / 2, 1, 3);
 
-    expect(Math.round(v.part(1))).toEqual(-1);
-    expect(Math.round(v.part(2))).toEqual(-1);
-    expect(Math.round(v.part(3))).toEqual(-1);
+    expect(Math.round(v.component(1))).toEqual(-1);
+    expect(Math.round(v.component(2))).toEqual(-1);
+    expect(Math.round(v.component(3))).toEqual(-1);
 
     // Invert the rotation (steps need to happen in reverse order)
     v = v.rotate(-Math.PI / 2, 2, 3);
     v = v.rotate(-Math.PI / 2, 1, 2);
     v = v.rotate(-Math.PI / 2, 1, 3);
 
-    expect(Math.round(v.part(1))).toEqual(1);
-    expect(Math.round(v.part(2))).toEqual(1);
-    expect(Math.round(v.part(3))).toEqual(1);
+    expect(Math.round(v.component(1))).toEqual(1);
+    expect(Math.round(v.component(2))).toEqual(1);
+    expect(Math.round(v.component(3))).toEqual(1);
   });
 
   it("should handle conjugate", () => {
     const i = e12;
     expect(i.conjugate().toString()).toEqual("- e₁e₂");
-    expect(i.product(i.conjugate())).toEqual(one);
 
     const m1 = e1;
-    expect(m1.conjugate().toString()).toEqual("- e₁");
-    expect(m1.product(m1.conjugate())).toEqual(Multivector.scalar(-1));
+    expect(m1.conjugate().toString()).toEqual("e₁");
 
     const m2 = one.add(e12);
     expect(m2.conjugate().toString()).toEqual("1 - e₁e₂");
-    expect(m2.product(m2.conjugate())).toEqual(two);
+  });
+
+  it("should handle module", () => {
+    expect(e1.module()).toEqual(1);
+    expect(e1.add(e2).module()).toEqual(Math.SQRT2);
+
+    const i = e12;
+    expect(i.module()).toEqual(1);
+
+    const m1 = e12.add(e13);
+    expect(m1.module()).toEqual(Math.SQRT2);
+  });
+
+  it("should handle blades", () => {
+    const m = e1.add(e2).add(e12);
+
+    expect(m.blade(0).toString()).toEqual("0");
+    expect(m.blade(1).toString()).toEqual("e₁ + e₂");
+    expect(m.blade(2).toString()).toEqual("e₁e₂");
+  });
+
+  it("should calculate the cosine between a bivector and a vector", () => {
+    expect(e12.product(e1).blade(1).moduleSquare()).toEqual(1);
+    expect(
+      e12
+        .product(e1.add(e3).product(1 / Math.SQRT2))
+        .blade(1)
+        .moduleSquare()
+        .toPrecision(1)
+    ).toEqual("0.5");
+    expect(e12.product(e3).blade(1).moduleSquare()).toEqual(0);
+  });
+
+  it("should handle mixations", () => {
+    const plane = e1.product(e2);
+    expect(Multivector.mixation(plane).mix(e1, Math.PI).component(1)).toEqual(
+      -1
+    );
+    expect(Multivector.mixation(plane).mix(e3, Math.PI).component(3)).toEqual(
+      1
+    );
   });
 });
 

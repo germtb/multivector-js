@@ -48,6 +48,60 @@ export class Multivector {
     return new Multivector(state);
   }
 
+  blade(grade: number): Multivector {
+    const newValues = new TypedArrayMap<number>();
+
+    for (const [base, value] of this.values.entries()) {
+      if (base.length === grade) [newValues.set(base, value)];
+    }
+
+    return new Multivector(newValues);
+  }
+
+  static mixation(plane: Multivector) {
+    const rotation = plane.blade(2);
+    const module = rotation.module();
+    const normalizedRotation = rotation.product(1 / module);
+
+    return {
+      mix: (vector: Multivector, amount: number) => {
+        const vectorPlaneAngleCosine = normalizedRotation
+          .product(vector)
+          .blade(1)
+          .moduleSquare();
+
+        const mixedAmount = vectorPlaneAngleCosine * amount;
+
+        const left = Multivector.scalar(Math.cos(mixedAmount / 2)).add(
+          normalizedRotation.product(Math.sin(mixedAmount / 2))
+        );
+
+        const right = Multivector.scalar(Math.cos(mixedAmount / 2)).add(
+          normalizedRotation.product(Math.sin(-mixedAmount / 2))
+        );
+
+        return left.product(vector).product(right).blade(1);
+      },
+    };
+  }
+
+  static inflation(axis: Multivector) {
+    return {
+      inflate: (vector: Multivector, amount: number) => {
+        const product = axis.product(vector);
+        const rotation = product.blade(2);
+        const left = Multivector.scalar(Math.cos(amount / 2)).add(
+          rotation.product(Math.sin(amount / 2))
+        );
+        const right = Multivector.scalar(Math.cos(amount / 2)).add(
+          rotation.product(Math.sin(-amount / 2))
+        );
+
+        return left.product(vector).product(right).blade(1);
+      },
+    };
+  }
+
   product(m: Multivector | number): Multivector {
     if (typeof m === "number") {
       return this.product(Multivector.scalar(m));
@@ -133,16 +187,16 @@ export class Multivector {
     return this.add(m.product(Multivector.scalar(-1)));
   }
 
-  part(...bases: Base[]): number {
+  component(...bases: Base[]): number {
     return this.values.get(new Uint8Array(bases)) ?? 0;
   }
 
-  scalarPart(): number {
-    return this.part();
+  scalarComponent(): number {
+    return this.component();
   }
 
   nonScalarPart(): Multivector {
-    if (this.scalarPart() === 0) {
+    if (this.scalarComponent() === 0) {
       return this;
     }
 
@@ -151,11 +205,29 @@ export class Multivector {
     return new Multivector(newValues);
   }
 
+  moduleSquare(): number {
+    return this.product(this.conjugate()).scalarComponent();
+  }
+
+  module(): number {
+    return Math.sqrt(this.moduleSquare());
+  }
+
   conjugate(): Multivector {
     const newValues = new TypedArrayMap<number>();
 
     for (const [key, value] of this.values.entries()) {
-      const sign = Math.pow(-1, (key.length * (key.length + 1)) / 2);
+      let sign;
+
+      if (key.length === 0) {
+        sign = 1;
+      } else if (key.length % 2 === 0) {
+        sign = -1;
+      } else {
+        sign = 1;
+      }
+
+      // const sign = Math.pow(-1, (key.length * (key.length + 1)) / 2);
       newValues.set(key, sign * value);
     }
 
