@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 
 import { BaseView, Button, Column, H1, Row, TextInput } from "aidos-ui/dist";
 import { init } from "@/three/scene";
-import { Vector3 } from "three";
+import { PointsMaterial, SRGBColorSpace, TextureLoader, Vector3 } from "three";
 import { Multivector } from "@/Multivector";
 
 function randomDirection({
@@ -20,15 +20,10 @@ function randomDirection({
   minZ?: number;
   maxZ?: number;
 } = {}) {
-  const x = 2 * Math.random() - 1;
-  const y = 2 * Math.random() - 1;
-  const z = 2 * Math.random() - 1;
-  // return new Vector3().randomDirection().normalize();
-  return new Vector3(
-    x > maxX ? maxX : x < minX ? minX : x,
-    y > maxY ? maxY : y < minY ? minY : y,
-    z > maxZ ? maxZ : z < minZ ? minZ : z
-  ).normalize();
+  const x = Math.random() * (maxX - minX) + minX;
+  const y = Math.random() * (maxY - minY) + minY;
+  const z = Math.random() * (maxZ - minZ) + minZ;
+  return new Vector3(x, y, z).normalize();
 }
 
 export default function Home() {
@@ -59,6 +54,35 @@ export default function Home() {
         )
       );
     }
+
+    // const sprite = new TextureLoader().load("disc.png");
+    // sprite.colorSpace = SRGBColorSpace;
+
+    // const dotMaterial = new PointsMaterial({
+    //   color: 0xff0000,
+    //   size: 0.025,
+    //   map: sprite,
+    //   alphaTest: 0.5,
+    //   transparent: true,
+    // });
+
+    // for (let i = 0; i < 100; i++) {
+    //   vectors.push(
+    //     api.render.vector(
+    //       // randomDirection()
+    //       randomDirection({
+    //         minX: -0.4,
+    //         maxX: -0.5,
+    //         minY: -0.4,
+    //         maxY: -0.5,
+    //         minZ: -0.5,
+    //         maxZ: -0.5,
+    //       }),
+    //       dotMaterial
+    //       // i.toString()
+    //     )
+    //   );
+    // }
 
     function inflateRandom() {
       const direction = randomDirection();

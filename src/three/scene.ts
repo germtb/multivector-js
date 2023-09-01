@@ -104,14 +104,13 @@ export function init(root: HTMLElement) {
 
   const dotMaterial = new PointsMaterial({
     color: 0xffffff,
-    size: 0.05,
+    size: 0.025,
     map: sprite,
     alphaTest: 0.5,
     transparent: true,
-    // sizeAttenuation: false,
   });
 
-  const vector = (v: Vector3, label?: string) => {
+  const vector = (v: Vector3, material?: PointsMaterial, label?: string) => {
     const state = {
       v,
     };
@@ -120,7 +119,7 @@ export function init(root: HTMLElement) {
       "position",
       new Float32BufferAttribute([v.x, v.y, v.z], 3)
     );
-    const dot = new Points(geometry, dotMaterial);
+    const dot = new Points(geometry, material ?? dotMaterial);
     scene.add(dot);
 
     // const geometry = new BufferGeometry().setFromPoints([origin, v]);
