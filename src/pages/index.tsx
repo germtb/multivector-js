@@ -48,7 +48,7 @@ export default function Home() {
 
     const api = init(root);
 
-    const vectors: Array<mixed> = [];
+    const vectors: Array<{}> = [];
 
     for (let i = 0; i < 10000; i++) {
       vectors.push(
