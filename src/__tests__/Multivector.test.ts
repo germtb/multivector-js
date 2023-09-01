@@ -185,12 +185,12 @@ describe("multivector", () => {
     expect(e12.product(e3).blade(1).moduleSquare()).toEqual(0);
   });
 
-  it("should handle mixations", () => {
+  it("should handle torsions", () => {
     const plane = e1.product(e2);
-    expect(Multivector.mixation(plane).mix(e1, Math.PI).component(1)).toEqual(
+    expect(Multivector.torsion(plane).twist(e1, Math.PI).component(1)).toEqual(
       -1
     );
-    expect(Multivector.mixation(plane).mix(e3, Math.PI).component(3)).toEqual(
+    expect(Multivector.torsion(plane).twist(e3, Math.PI).component(3)).toEqual(
       1
     );
   });

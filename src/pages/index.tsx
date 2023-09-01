@@ -1,6 +1,6 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
-import { BaseView, Column, H1, Row } from "aidos-ui/dist";
+import { BaseView, Button, Column, H1, Row, TextInput } from "aidos-ui/dist";
 import { init } from "@/three/scene";
 import { Vector3 } from "three";
 import { Multivector } from "@/Multivector";
@@ -32,6 +32,13 @@ function randomDirection({
 }
 
 export default function Home() {
+  const [magnitude, setMagnitude] = useState(0.5);
+
+  const operationsRef = useRef({
+    twistXY: (angle: number) => {},
+    twistXZ: (angle: number) => {},
+    twistYZ: (angle: number) => {},
+  });
   useEffect(() => {
     const root = document.getElementById("three");
 
@@ -70,11 +77,11 @@ export default function Home() {
       inflate(new Vector3(0, 0, 1));
     }
 
-    function mix(plane: Multivector, angle: number) {
-      const mixation = Multivector.mixation(plane);
+    function twist(plane: Multivector, angle: number) {
+      const torsion = Multivector.torsion(plane);
 
       for (const vector of vectors) {
-        const result = mixation.mix(
+        const result = torsion.twist(
           Multivector.vector(vector.x(), 1)
             .add(Multivector.vector(vector.y(), 2))
             .add(Multivector.vector(vector.z(), 3)),
@@ -87,10 +94,22 @@ export default function Home() {
       }
     }
 
-    function mixXY(angle: number) {
+    function twistXY(angle: number) {
       const x = Multivector.vector(1, 1);
       const y = Multivector.vector(1, 2);
-      mix(x.product(y), angle);
+      twist(x.product(y), angle);
+    }
+
+    function twistXZ(angle: number) {
+      const x = Multivector.vector(1, 1);
+      const z = Multivector.vector(1, 3);
+      twist(x.product(z), angle);
+    }
+
+    function twistYZ(angle: number) {
+      const y = Multivector.vector(1, 2);
+      const z = Multivector.vector(1, 3);
+      twist(y.product(z), angle);
     }
 
     function inflate(direction) {
@@ -114,21 +133,37 @@ export default function Home() {
       }
     }
 
-    // @ts-ignore
-    window.inflate = inflate;
-    // @ts-ignore
-    window.inflateX = inflateX;
-    // @ts-ignore
-    window.inflateY = inflateY;
-    // @ts-ignore
-    window.inflateZ = inflateZ;
-    // @ts-ignore
-    window.mixXY = mixXY;
+    operationsRef.current.twistXY = twistXY;
+    operationsRef.current.twistXZ = twistXZ;
+    operationsRef.current.twistYZ = twistYZ;
   }, []);
 
   return (
-    <Column jsStyle={{ height: "100%" }} padding="medium">
-      <H1>MultivectorJS</H1>
+    <Column jsStyle={{ height: "100%" }} padding="medium" gap="medium">
+      <H1>Elastic encryption</H1>
+      <Row gap="medium">
+        <TextInput
+          placeholder="Magnitude"
+          value={magnitude}
+          type="number"
+          onValueChange={(value) => setMagnitude(parseFloat(value))}
+        />
+        <Button
+          label="Twist XY"
+          onClick={() => operationsRef.current.twistXY(magnitude)}
+          color="positive"
+        />
+        <Button
+          label="Twist XZ"
+          onClick={() => operationsRef.current.twistXZ(magnitude)}
+          color="positive"
+        />
+        <Button
+          label="Twist YZ"
+          onClick={() => operationsRef.current.twistYZ(magnitude)}
+          color="positive"
+        />
+      </Row>
       <BaseView grow relative id="three" />
     </Column>
   );

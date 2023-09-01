@@ -58,13 +58,13 @@ export class Multivector {
     return new Multivector(newValues);
   }
 
-  static mixation(plane: Multivector) {
+  static torsion(plane: Multivector) {
     const rotation = plane.blade(2);
     const module = rotation.module();
     const normalizedRotation = rotation.product(1 / module);
 
     return {
-      mix: (vector: Multivector, amount: number) => {
+      twist: (vector: Multivector, amount: number) => {
         const vectorPlaneAngleCosine = normalizedRotation
           .product(vector)
           .blade(1)
