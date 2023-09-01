@@ -20,7 +20,8 @@ import {
   WebGLRenderer,
 } from "three";
 
-import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+// @ts-ignore
+import { TrackballControls } from "three/addons/controls/TrackballControls";
 
 function initCamera({
   scene,
@@ -43,7 +44,7 @@ export function init(root: HTMLElement) {
 
   const scene = new Scene();
   const camera = initCamera({ scene, ratio });
-  const controls = new OrbitControls(camera, root);
+  const controls = new TrackballControls(camera, root);
 
   const renderer = new WebGLRenderer();
 

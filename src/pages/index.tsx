@@ -48,7 +48,7 @@ export default function Home() {
 
     const api = init(root);
 
-    const vectors: Array<{}> = [];
+    const vectors: Array<any> = [];
 
     for (let i = 0; i < 10000; i++) {
       vectors.push(
@@ -112,7 +112,7 @@ export default function Home() {
       twist(y.product(z), angle);
     }
 
-    function inflate(direction) {
+    function inflate(direction: Vector3) {
       const inflation = Multivector.inflation(
         Multivector.vector(direction.x, 1)
           .add(Multivector.vector(direction.y, 2))
